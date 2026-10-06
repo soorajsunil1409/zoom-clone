@@ -13,7 +13,7 @@ from app.services.meeting_service import (
 	create_instant_meeting,
 	create_scheduled_meeting,
 	end_meeting,
-	get_meeting,
+	get_meeting_by_code,
 	start_meeting,
 	update_meeting,
 )
@@ -84,16 +84,16 @@ def create_scheduled(
 
 
 @router.get(
-	"/{meeting_id}",
+	"/{meeting_code}",
 	response_model=MeetingOut,
 )
 def get_meeting_details(
-	meeting_id: int,
+	meeting_code: int,
 	db: Session = Depends(get_db),
 ):
-	meeting = get_meeting(
+	meeting = get_meeting_by_code(
 		db=db,
-		meeting_id=meeting_id,
+		meeting_code=meeting_code,
 	)
 	
 	print(meeting)
@@ -108,17 +108,17 @@ def get_meeting_details(
 
 
 @router.patch(
-	"/{meeting_id}",
+	"/{meeting_code}",
 	response_model=MeetingOut,
 )
 def update_meeting_details(
-	meeting_id: int,
+	meeting_code: int,
 	data: MeetingUpdate,
 	db: Session = Depends(get_db),
 ):
-	meeting = get_meeting(
+	meeting = get_meeting_by_code(
 		db=db,
-		meeting_id=meeting_id,
+		meeting_code=meeting_code,
 	)
 
 	if not meeting:
@@ -135,16 +135,16 @@ def update_meeting_details(
 
 
 @router.post(
-	"/{meeting_id}/start",
+	"/{meeting_code}/start",
 	response_model=MeetingOut,
 )
 def start(
-	meeting_id: int,
+	meeting_code: int,
 	db: Session = Depends(get_db),
 ):
-	meeting = get_meeting(
+	meeting = get_meeting_by_code(
 		db=db,
-		meeting_id=meeting_id,
+		meeting_code=meeting_code,
 	)
 
 	if not meeting:
@@ -166,16 +166,16 @@ def start(
 
 
 @router.post(
-	"/{meeting_id}/end",
+	"/{meeting_code}/end",
 	response_model=MeetingOut,
 )
 def end(
-	meeting_id: int,
+	meeting_code: int,
 	db: Session = Depends(get_db),
 ):
-	meeting = get_meeting(
+	meeting = get_meeting_by_code(
 		db=db,
-		meeting_id=meeting_id,
+		meeting_code=meeting_code,
 	)
 
 	if not meeting:
