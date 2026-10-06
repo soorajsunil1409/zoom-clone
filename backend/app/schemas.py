@@ -69,6 +69,11 @@ class MeetingCreate(BaseModel):
 
 class InstantMeetingCreate(BaseModel):
     title: str | None = None
+    description: str | None = None
+    duration_minutes: int = Field(60, ge=1, le=1440)
+    timezone: str = "UTC"
+    waiting_room: bool = False
+    mute_on_entry: bool = False
 
     @field_validator("title")
     @classmethod
