@@ -9,6 +9,16 @@ from app.services.participant_service import (
     get_participant_by_token,
     join_meeting,
     leave_meeting,
+    mute_all,
+	update_media_state,
+)
+
+from app.schemas import (
+    JoinRequest,
+    JoinResponse,
+    ParticipantOut,
+    MediaStateUpdate,
+    MuteAllOut,
 )
 
 router = APIRouter(
@@ -113,3 +123,96 @@ def participants(
         db=db,
         meeting_id=meeting.id,
     )
+
+
+@router.patch(
+    "/{meeting_code}/participants/me/media",
+    response_model=ParticipantOut,
+)
+def update_media(
+    meeting_code: str,
+    data: MediaStateUpdate,
+    token: str,
+    db: Session = Depends(get_db),
+):
+    meeting = get_meeting_by_code(
+        db=db,
+        meeting_code=meeting_code,
+    )
+
+    if not meeting:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Meeting not found",
+        )
+
+    participant = get_participant_by_token(
+        db=db,
+        token=token,
+    )
+
+    if not participant or participant.meeting_id != meeting.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Participant not found",
+        )
+
+    if participant.status.value != "joined":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Participant is not in the meeting",
+        )
+
+    return update_media_state(
+        db=db,
+        participant=participant,
+        is_muted=data.is_muted,
+        is_video_on=data.is_video_on,
+        is_screen_sharing=data.is_screen_sharing,
+    )
+
+
+@router.post(
+    "/{meeting_code}/mute-all",
+    response_model=MuteAllOut,
+)
+def mute_everyone(
+    meeting_code: str,
+    token: str,
+    db: Session = Depends(get_db),
+):
+    meeting = get_meeting_by_code(
+        db=db,
+        meeting_code=meeting_code,
+    )
+
+    if not meeting:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Meeting not found",
+        )
+
+    participant = get_participant_by_token(
+        db=db,
+        token=token,
+    )
+
+    if not participant or participant.meeting_id != meeting.id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Participant not found",
+        )
+
+    if participant.role.value != "host":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the host can mute everyone",
+        )
+
+    count = mute_all(
+        db=db,
+        meeting_id=meeting.id,
+        exclude_participant_id=participant.id,
+    )
+
+    return {"muted": count}

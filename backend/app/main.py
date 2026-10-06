@@ -2,9 +2,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from .database import Base, engine
 from . import models
+from .database import Base, engine
 from .routers.meetings import router as meetings_router
+from .routers.participants import router as participants_router
 
 
 @asynccontextmanager
@@ -20,6 +21,7 @@ app = FastAPI(
 )
 
 app.include_router(meetings_router)
+app.include_router(participants_router)
 
 
 @app.get("/health")

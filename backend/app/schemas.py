@@ -4,6 +4,12 @@ from enum import Enum
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
+class MediaStateUpdate(BaseModel):
+    is_muted: bool | None = None
+    is_video_on: bool | None = None
+    is_screen_sharing: bool | None = None
+    
+
 class MeetingType(str, Enum):
     instant = "instant"
     scheduled = "scheduled"
