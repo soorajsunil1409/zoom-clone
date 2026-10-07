@@ -6,6 +6,7 @@ from . import models
 from .database import Base, engine
 from .routers.meetings import router as meetings_router
 from .routers.participants import router as participants_router
+from .websocket.meeting_socket import router as websocket_router
 
 
 @asynccontextmanager
@@ -22,6 +23,7 @@ app = FastAPI(
 
 app.include_router(meetings_router)
 app.include_router(participants_router)
+app.include_router(websocket_router)
 
 
 @app.get("/health")
